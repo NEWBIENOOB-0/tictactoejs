@@ -1,91 +1,116 @@
-let boxes = document.querySelectorAll(".box");
-let resetBtn = document.querySelector("#reset-btn");
-let newGameBtn = document.querySelector("#new-btn");
-let msgContainer = document.querySelector(".msg-container");
-let msg = document.querySelector("#msg");
+document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('board');
+    const message = document.getElementById('message');
+    const restartButton = document.getElementById('restart');
+    const cells = [];
+    let currentPlayer = '❌';
+    let gameActive = true;
 
-let turnO = true; //playerX, playerO
-let count = 0; //To Track Draw
+    initializeBoard();
 
-const winPatterns = [
-  [0, 1, 2],
-  [0, 3, 6],
-  [0, 4, 8],
-  [1, 4, 7],
-  [2, 5, 8],
-  [2, 4, 6],
-  [3, 4, 5],
-  [6, 7, 8],
-];
+    function initializeBoard() {
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.dataset.index = i;
+            cell.addEventListener('click', handleCellClick);
+            board.appendChild(cell);
+            cells.push(cell);
+        }
 
-const resetGame = () => {
-  turnO = true;
-  count = 0;
-  enableBoxes();
-  msgContainer.classList.add("hide");
-};
-
-boxes.forEach((box) => {
-  box.addEventListener("click", () => {
-    if (turnO) {
-      //playerO
-      box.innerText = "O";
-      turnO = false;
-    } else {
-      //playerX
-      box.innerText = "X";
-      turnO = true;
+        restartButton.addEventListener('click', restartGame);
+        renderBoard();
     }
-    box.disabled = true;
-    count++;
 
-    let isWinner = checkWinner();
+    function handleCellClick(event) {
+        if (!gameActive) return;
 
-    if (count === 9 && !isWinner) {
-      gameDraw();
+        const clickedCell = event.target;
+        const cellIndex = clickedCell.dataset.index;
+
+        if (cells[cellIndex].textContent === '') {
+            cells[cellIndex].textContent = currentPlayer;
+            checkWinner();
+            currentPlayer = currentPlayer === '❌' ? '⭕' : '❌';
+
+            if (currentPlayer === '⭕' && gameActive) {
+                makeComputerMove();
+            }
+        }
     }
-  });
+
+    function makeComputerMove() {
+        const emptyCells = cells.filter(cell => cell.textContent === '');
+        const randomIndex = Math.floor(Math.random() * emptyCells.length);
+        const randomCell = emptyCells[randomIndex];
+
+        if (randomCell) {
+            setTimeout(() => {
+                randomCell.textContent = currentPlayer;
+                checkWinner();
+                currentPlayer = currentPlayer === '❌' ? '⭕' : '❌';
+            }, 500);
+        }
+    }
+
+    function checkWinner() {
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        for (const combination of winningCombinations) {
+            const [a, b, c] = combination;
+            if (
+                cells[a].textContent &&
+                cells[a].textContent === cells[b].textContent &&
+                cells[a].textContent === cells[c].textContent
+            ) {
+                highlightWinner(combination);
+                showResult(`${currentPlayer === '❌' ? 'You' : 'Computer'} Win! 🏆`);
+                gameActive = false;
+                return;
+            }
+        }
+
+        if (cells.every(cell => cell.textContent !== '')) {
+            showResult('It\'s a Draw! 🤝');
+            gameActive = false;
+        }
+    }
+
+    function highlightWinner(combination) {
+        for (const index of combination) {
+            cells[index].style.color = 'red';
+        }
+    }
+
+    function showResult(result) {
+        message.textContent = result;
+    }
+
+    function renderBoard() {
+        for (const cell of cells) {
+            cell.textContent = '';
+            cell.style.color = '#000';
+        }
+
+        message.textContent = '';
+        currentPlayer = '❌';
+        gameActive = true;
+    }
+
+    function restartGame() {
+        for (const cell of cells) {
+            cell.style.color = '#000';
+        }
+
+        renderBoard();
+    }
 });
-
-const gameDraw = () => {
-  msg.innerText = `Game was a Draw.`;
-  msgContainer.classList.remove("hide");
-  disableBoxes();
-};
-
-const disableBoxes = () => {
-  for (let box of boxes) {
-    box.disabled = true;
-  }
-};
-
-const enableBoxes = () => {
-  for (let box of boxes) {
-    box.disabled = false;
-    box.innerText = "";
-  }
-};
-
-const showWinner = (winner) => {
-  msg.innerText = `Congratulations, Winner is ${winner}`;
-  msgContainer.classList.remove("hide");
-  disableBoxes();
-};
-
-const checkWinner = () => {
-  for (let pattern of winPatterns) {
-    let pos1Val = boxes[pattern[0]].innerText;
-    let pos2Val = boxes[pattern[1]].innerText;
-    let pos3Val = boxes[pattern[2]].innerText;
-
-    if (pos1Val != "" && pos2Val != "" && pos3Val != "") {
-      if (pos1Val === pos2Val && pos2Val === pos3Val) {
-        showWinner(pos1Val);
-        return true;
-      }
-    }
-  }
-};
-
-newGameBtn.addEventListener("click", resetGame);
-resetBtn.addEventListener("click", resetGame);
