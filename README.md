@@ -17,7 +17,7 @@ Play the classic game of Tic Tac Toe right in your browser! This simple web appl
 
 ## How to Play
 
-1. Visit the [live demo](#) or clone the repository.
+1. Visit the [live demo](https://newbienoob-0.github.io/tictactoejs/) or clone the repository.
 2. Open `index.html` in your browser.
 3. Choose your game mode (two-player or single-player).
 4. Click on the grid to make your move.
