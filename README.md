@@ -23,4 +23,3 @@ Play the classic game of Tic Tac Toe right in your browser! This simple web appl
 4. Click on the grid to make your move.
 5. Watch out for the winning combination or try to outsmart the computer!
 
-Challenge your friends or test your strategic skills against the AI. Have fun playing!
